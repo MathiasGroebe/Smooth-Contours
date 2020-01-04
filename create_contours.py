@@ -8,7 +8,9 @@ import random
 
 demFile = "334245636_dgm1.tif"
 intervall = 10
+pixelSize = 10
 name = "contour"
+tmp_file = "resample_dem.tif"
 
 
 def randomString(): # Calculate a random string
@@ -18,7 +20,6 @@ def randomString(): # Calculate a random string
 
 def smoothTerrain(inputTerrain, kernelSize):
 
-    #inputDEM = tmpFolder + "/" + inputTerrain
     inputDEM = inputTerrain
     prefix = randomString()
     smooth = kernelSize
@@ -115,12 +116,19 @@ def smoothTerrain(inputTerrain, kernelSize):
 
     return("smooth_" + inputDEM)
 
-smooth_dem = smoothTerrain(demFile, 13)
+def main():
+    # Resample
+    os.system("gdal_translate " + demFile + " " + tmp_file + " -tr "  + str(pixelSize) + " " + str(pixelSize) + " -r cubic")
 
-print("Create contour lines...")
+    # Smooth terrain
+    smooth_dem = smoothTerrain(tmp_file, 13)
 
-os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + name + ".sqlite -nln smooth_contour -i " + str(intervall))
+    print("Create contour lines...")
+    os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + name + ".sqlite -nln smooth_contour -i " + str(intervall))
 
-# Clean up
+    # Clean up
+    os.remove(tmp_file)
+    os.remove(smooth_dem)
 
-os.remove(smooth_dem)
+if __name__ == "__main__":
+    main()

@@ -39,6 +39,31 @@ def smoothTerrain(inputTerrain, kernelSize):
     file.write(data)
     file.close()
 
+    # Build VRT for smoothed DEM
+    os.system("gdalbuildvrt " + prefix + "_dem_blur_5x5.vrt " + prefix + "_dem.tif")
+
+    file = open(prefix + "_dem_blur_5x5.vrt", "rt")
+    data = file.read()
+    data = data.replace("ComplexSource", "KernelFilteredSource")
+    data = data.replace("<NODATA>-32768</NODATA>", '<NODATA>-32768</NODATA><Kernel normalized="1"><Size>5</Size><Coefs>0.003765 0.015019 0.023792 0.015019 0.003765 0.015019 0.059912 0.094907 0.059912 0.015019 0.023792 0.094907 0.150342 0.094907 0.023792 0.015019 0.059912 0.094907 0.059912 0.015019 0.003765 0.015019 0.023792 0.015019 0.003765</Coefs></Kernel>')
+    file.close()
+
+    file = open(prefix + "_dem_blur_5x5.vrt", "wt")
+    file.write(data)
+    file.close()
+
+    # Build VRT for more smoothed DEM
+    os.system("gdalbuildvrt " + prefix + "_dem_blur_7x7.vrt " + prefix + "_dem.tif")
+
+    file = open(prefix + "_dem_blur_7x7.vrt", "rt")
+    data = file.read()
+    data = data.replace("ComplexSource", "KernelFilteredSource")
+    data = data.replace("<NODATA>-32768</NODATA>", '<NODATA>-32768</NODATA><Kernel normalized="1"><Size>7</Size><Coefs>0.000036 0.000363 0.001446 0.002291 0.001446 0.000363 0.000036 0.000363 0.003676 0.014662 0.023226 0.014662 0.003676 0.000363 0.001446 0.014662 0.058488 0.092651 0.058488 0.014662 0.001446 0.002291 0.023226 0.092651 0.146768 0.092651 0.023226 0.002291 0.001446 0.014662 0.058488 0.092651 0.058488 0.014662 0.001446 0.000363 0.003676 0.014662 0.023226 0.014662 0.003676 0.000363 0.000036 0.000363 0.001446 0.002291 0.001446 0.000363 0.000036</Coefs></Kernel>')
+    file.close()
+
+    file = open(prefix + "_dem_blur_7x7.vrt", "wt")
+    file.write(data)
+    file.close()
 
     # Build VRT for more stronger smoothed DEM
     os.system("gdalbuildvrt " + prefix + "_dem_blur_9x9.vrt " + prefix + "_dem.tif")
@@ -93,8 +118,16 @@ def smoothTerrain(inputTerrain, kernelSize):
 
     # Combine it together
     print("Build better DEM for contour lines...")
+
+    print(str(smooth))
+
+
     if (smooth == 13):
         os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_13x13.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C"')
+    if (smooth == 7):
+        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_7x7.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C"')   
+    if (smooth == 5):
+        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_5x5.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C"')    
     if (smooth == 3):
         os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_3x3.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C"')   
     else:
@@ -104,6 +137,8 @@ def smoothTerrain(inputTerrain, kernelSize):
     os.remove(prefix + "_dem.tif")
     os.remove(prefix + "_dem_tpi.tif")
     os.remove(prefix + "_dem_blur_3x3.vrt")
+    os.remove(prefix + "_dem_blur_5x5.vrt")
+    os.remove(prefix + "_dem_blur_7x7.vrt")
     os.remove(prefix + "_dem_blur_9x9.vrt")
     os.remove(prefix + "_dem_blur_13x13.vrt")
     os.remove(prefix + "_tpi_pos.tif")
@@ -138,7 +173,7 @@ def main(argv):
             print("\t--outputFile=(vectorFilename)* write the name of the outputfile for the contours. The format is guessed form the extention")
             print("\t--intervall=(float)* intervall between the contour lines.")
             print("\t--pixelSize=(float)* pixel size of the DEM, or a greater number. Used for reampling and should correspond with the aimed map scale")
-            print("\t--gaussainBlur={3, 9, 13} kernel size for smoothing flat areas. Default 9.")
+            print("\t--gaussainBlur={3, 5, 7, 9, 13} kernel size for smoothing flat areas. Default 9.")
             print("\t--help print this hopefully hepfully text.")
             print("\t*necessary for execution.")
             print("Mathias Gröbe 2020")
@@ -172,7 +207,7 @@ def main(argv):
                 os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
             except:
                 if os.path.isfile(outputFile):
-                    print("Can not delete old file! Is is open in a GIS?")
+                    print("Can not delete old file! Is it open in a GIS?")
                 else:
                     print("Create " + outputFile + ".")
                     os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))

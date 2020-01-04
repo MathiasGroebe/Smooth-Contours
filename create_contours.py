@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import re
@@ -119,11 +120,6 @@ def main(argv):
     pixelSize = ''
     gaussainBlur = ''
 
-    #demFile = "334245636_dgm1.tif"
-    #intervall = 2.5
-    #pixelSize = 2
-    #gaussainBlur = 3
-
     tmp_file = "resample_dem.tif"
     overwrite = True
 
@@ -134,15 +130,17 @@ def main(argv):
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("--help"):
-            print("Create smooth contours with the help of GDAL. Algorithm after: ")
-            print("P. Kettunen, C. Koski, and J. Oksanen, “A design of contour generation for topographic maps with adaptive DEM smoothing,” International Journal of Cartography, vol. 3, no. 1, pp. 19–30, Jun. 2017.")
+            print("Create smooth contours with the help of GDAL. Usage:")
+            print("\tcreate_contour.py --inputDEM=DEMfile.tif --outputFile=contours.geoJSON --intervall=5 --pixelSize=2")
+            print("Algorithm after: P. Kettunen, C. Koski, and J. Oksanen, 'A design of contour generation for topographic maps with adaptive DEM smoothing' International Journal of Cartography, vol. 3, no. 1, pp. 19–30, Jun. 2017.")
             print("Parameters:")
             print("\t--inputDEM=(rasterFilename)* put here your DEM in any GDAL readable format.")
-            print("\t--outputDEM=(vectorFilename)* write the name of the outputfile for the contours. The format is guessed form the extention")
+            print("\t--outputFile=(vectorFilename)* write the name of the outputfile for the contours. The format is guessed form the extention")
             print("\t--intervall=(float)* intervall between the contour lines.")
             print("\t--pixelSize=(float)* pixel size of the DEM, or a greater number. Used for reampling and should correspond with the aimed map scale")
             print("\t--gaussainBlur={3, 9, 13} kernel size for smoothing flat areas. Default 9.")
-            print("\t*nessary for execution.")
+            print("\t--help print this hopefully hepfully text.")
+            print("\t*necessary for execution.")
             print("Mathias Gröbe 2020")
             sys.exit(0)
         elif opt in ("--inputDEM"):
@@ -171,13 +169,13 @@ def main(argv):
             try:
                 os.remove(outputFile)
                 print("Overwrite old file.")
-                os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(intervall))
+                os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
             except:
                 if os.path.isfile(outputFile):
                     print("Can not delete old file! Is is open in a GIS?")
                 else:
                     print("Create " + outputFile + ".")
-                    os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(intervall))
+                    os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
 
         # Clean up
         os.remove(tmp_file)
@@ -185,6 +183,7 @@ def main(argv):
 
     else:
         print("Sorry, missing some information. Please see help.")
+        print("create_contour.py --help")
         sys.exit(2)
 
 if __name__ == "__main__":

@@ -134,3 +134,4 @@ dmypy.json
 *.tif
 *.vrt
 *.xml
+*.sqlite

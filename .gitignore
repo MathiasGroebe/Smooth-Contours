@@ -131,4 +131,6 @@ dmypy.json
 
 # User
 
-.tif
+*.tif
+*.vrt
+*.xml

@@ -18,3 +18,7 @@ The script needs Python and GDAL. On Windows, it should run in the OSGeo4W Shell
 The following example image pair demonstrates the result of the generalization process. The contour lines are wrong in some areas but look overall better and smoother. Example for the "Sächsische Schweiz" made with the [DEM (20-meter resolution) form the GeoSN](https://www.geodaten.sachsen.de/digitale-hoehenmodelle-3994.html). Data source GeoSN, dl-de/by-2-0 
 ![Example](contour_example.png)
 
+## TODO
+
+ - Play around with kernel and parameters sizes
+ - Check smoothing of the TPI

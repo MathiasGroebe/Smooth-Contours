@@ -118,10 +118,6 @@ def smoothTerrain(inputTerrain, kernelSize):
 
     # Combine it together
     print("Build better DEM for contour lines...")
-
-    print(str(smooth))
-
-
     if (smooth == 13):
         os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_13x13.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C"')
     if (smooth == 7):
@@ -174,7 +170,7 @@ def main(argv):
             print("\t--intervall=(float)* intervall between the contour lines.")
             print("\t--pixelSize=(float)* pixel size of the DEM, or a greater number. Used for reampling and should correspond with the aimed map scale")
             print("\t--gaussainBlur={3, 5, 7, 9, 13} kernel size for smoothing flat areas. Default 9.")
-            print("\t--help print this hopefully hepfully text.")
+            print("\t--help print this hopefully helpfull text.")
             print("\t*necessary for execution.")
             print("Mathias Gröbe 2020")
             sys.exit(0)
@@ -187,7 +183,7 @@ def main(argv):
         elif opt in ("--pixelSize"):
             pixelSize = arg #10
         elif opt in ("--gaussainBlur"):
-            gaussainBlur = arg #{3, 9, 13}
+            gaussainBlur = arg #{3, 5, 7, 9, 13}
     
     if (inputDEM != '') & (outputFile != '') & (interval != '') & (pixelSize != ''):
 
@@ -204,13 +200,13 @@ def main(argv):
             try:
                 os.remove(outputFile)
                 print("Overwrite old file.")
-                os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
+                os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
             except:
                 if os.path.isfile(outputFile):
                     print("Can not delete old file! Is it open in a GIS?")
                 else:
                     print("Create " + outputFile + ".")
-                    os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
+                    os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
 
         # Clean up
         os.remove(tmp_file)

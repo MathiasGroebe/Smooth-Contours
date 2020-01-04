@@ -4,16 +4,8 @@ import os
 import re
 import string
 import random
-
-
-demFile = "334245636_dgm1.tif"
-intervall = 2.5
-pixelSize = 2
-gaussainBlur = 3
-outputName = "contour_3_2.geoJSON"
-tmp_file = "resample_dem.tif"
-overwrite = True
-
+import sys
+import getopt
 
 def randomString(): # Calculate a random string
     length = 6
@@ -120,31 +112,80 @@ def smoothTerrain(inputTerrain, kernelSize):
 
     return("smooth_" + inputDEM)
 
-def main():
-    # Resample
-    os.system("gdal_translate " + demFile + " " + tmp_file + " -tr "  + str(pixelSize) + " " + str(pixelSize) + " -r cubic")
+def main(argv):
+    inputDEM = ''
+    outputFile = ''
+    interval = ''
+    pixelSize = ''
+    gaussainBlur = ''
 
-    # Smooth terrain
-    smooth_dem = smoothTerrain(tmp_file, gaussainBlur)
+    #demFile = "334245636_dgm1.tif"
+    #intervall = 2.5
+    #pixelSize = 2
+    #gaussainBlur = 3
 
-    # Create contour lines file
-    print("Create contour lines...")
+    tmp_file = "resample_dem.tif"
+    overwrite = True
 
-    if(overwrite):
-        try:
-            os.remove(outputName)
-            print("Overwrite old file.")
-            os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputName + " -i " + str(intervall))
-        except:
-            if os.path.isfile(outputName):
-                print("Can not delete old file! Is is open in a GIS?")
-            else:
-                print("Create " + outputName + ".")
-                os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputName + " -i " + str(intervall))
+    try:
+        opts, args = getopt.getopt(argv, "", ["help", "inputDEM=", "outputFile=", "intervall=", "pixelSize=", "gaussainBlur="]) 
+    except getopt.GetoptError:
+        print("Please look use create_contours.py --help to get more information how to use the script. ")
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("--help"):
+            print("Create smooth contours with the help of GDAL. Algorithm after: ")
+            print("P. Kettunen, C. Koski, and J. Oksanen, “A design of contour generation for topographic maps with adaptive DEM smoothing,” International Journal of Cartography, vol. 3, no. 1, pp. 19–30, Jun. 2017.")
+            print("Parameters:")
+            print("\t--inputDEM=(rasterFilename)* put here your DEM in any GDAL readable format.")
+            print("\t--outputDEM=(vectorFilename)* write the name of the outputfile for the contours. The format is guessed form the extention")
+            print("\t--intervall=(float)* intervall between the contour lines.")
+            print("\t--pixelSize=(float)* pixel size of the DEM, or a greater number. Used for reampling and should correspond with the aimed map scale")
+            print("\t--gaussainBlur={3, 9, 13} kernel size for smoothing flat areas. Default 9.")
+            print("\t*nessary for execution.")
+            print("Mathias Gröbe 2020")
+            sys.exit(0)
+        elif opt in ("--inputDEM"):
+            inputDEM = arg #dem_file.tif
+        elif opt in ("--outputFile"):
+            outputFile = arg #contour.sqlite
+        elif opt in ("--intervall"): 
+            interval = arg #5
+        elif opt in ("--pixelSize"):
+            pixelSize = arg #10
+        elif opt in ("--gaussainBlur"):
+            gaussainBlur = arg #{3, 9, 13}
+    
+    if (inputDEM != '') & (outputFile != '') & (interval != '') & (pixelSize != ''):
 
-    # Clean up
-    os.remove(tmp_file)
-    os.remove(smooth_dem)
+        # Resample
+        os.system("gdal_translate " + inputDEM + " " + tmp_file + " -tr "  + str(pixelSize) + " " + str(pixelSize) + " -r cubic")
+
+        # Smooth terrain
+        smooth_dem = smoothTerrain(tmp_file, gaussainBlur)
+
+        # Create contour lines file
+        print("Create contour lines...")
+
+        if(overwrite):
+            try:
+                os.remove(outputFile)
+                print("Overwrite old file.")
+                os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(intervall))
+            except:
+                if os.path.isfile(outputFile):
+                    print("Can not delete old file! Is is open in a GIS?")
+                else:
+                    print("Create " + outputFile + ".")
+                    os.system("gdal_contour -inodata -snodata -32768 -a ele "  + smooth_dem + " " + outputFile + " -i " + str(intervall))
+
+        # Clean up
+        os.remove(tmp_file)
+        os.remove(smooth_dem)
+
+    else:
+        print("Sorry, missing some information. Please see help.")
+        sys.exit(2)
 
 if __name__ == "__main__":
-    main()
+   main(sys.argv[1:])

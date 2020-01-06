@@ -144,6 +144,23 @@ def smoothTerrain(inputTerrain, kernelSize):
 
     return("smooth_" + inputDEM)
 
+
+def createContours(outputFile, smooth_dem, interval):
+    # temp sqlite database
+    contoursFile = "contour.sqlite"
+
+    os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + contoursFile + " -i " + str(interval))
+    # Calculate length of countour lines
+    print("Calculate lenght of contour lines.")
+    os.system("ogr2ogr " + contoursFile + " " + contoursFile + " -update -dialect SQLITE -sql 'ALTER TABLE contour ADD COLUMN line_length float'")
+    os.system("ogr2ogr " + contoursFile + " " + contoursFile + " -update -dialect SQLITE -sql 'UPDATE contour SET line_length = length(GEOMETRY)'")
+    # Convert to output format
+    os.system("ogr2ogr " + outputFile + " " + contoursFile)
+
+    # Clean up
+    os.remove(contoursFile)
+
+
 def main(argv):
     inputDEM = ''
     outputFile = ''
@@ -200,13 +217,13 @@ def main(argv):
             try:
                 os.remove(outputFile)
                 print("Overwrite old file.")
-                os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
+                createContours(outputFile, smooth_dem, interval)
             except:
                 if os.path.isfile(outputFile):
                     print("Can not delete old file! Is it open in a GIS?")
                 else:
                     print("Create " + outputFile + ".")
-                    os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + outputFile + " -i " + str(interval))
+                    createContours(outputFile, smooth_dem, interval)
 
         # Clean up
         os.remove(tmp_file)

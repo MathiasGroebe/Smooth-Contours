@@ -9,7 +9,7 @@ DOI: [10.1080/23729333.2017.1300998](http://dx.doi.org/10.1080/23729333.2017.130
  
     create_contour.py --inputDEM=DEMfile.tif --outputFile=contours.geoJSON --intervall=5 --pixelSize=2
 
-Input is as DEM in any GDAL readable raster format. The output format is guessed from the extension of the file name and can be any file-based vector format supported by [gdal_contour](https://gdal.org/programs/gdal_contour.html).
+Input is as DEM in any GDAL readable raster format. The output format is guessed from the extension of the file name and can be any file-based vector format supported by [gdal_contour](https://gdal.org/programs/gdal_contour.html). The script calculate also the length of the contour lines. Finde the lenght of each line in the attribute "line_length" and use it to hide to short contour lines. 
 
 The script needs Python and GDAL. On Windows, it should run in the OSGeo4W Shell. 
 
@@ -22,3 +22,4 @@ The following example image pair demonstrates the result of the generalization p
 
  - Play around with kernel and parameters sizes
  - Check smoothing of the TPI
+ - Indicate area with too many and too less contour lines

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -7,6 +7,8 @@ import string
 import random
 import sys
 import getopt
+
+import spatialite
 
 def randomString(): # Calculate a random string
     length = 6
@@ -147,15 +149,25 @@ def smoothTerrain(inputTerrain, kernelSize):
 
 def createContours(outputFile, smooth_dem, interval):
     # temp sqlite database
-    contoursFile = "contour.sqlite"
+    buffer = 20
+    doubleInterval = float(interval) / 2
+    prefix = randomString()
+    contoursFile = prefix + "_contour.gpkg"
 
-    os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + contoursFile + " -i " + str(interval))
+    os.system("gdal_contour -inodata -a ele "  + smooth_dem + " " + contoursFile + " -i " + str(doubleInterval))
+   
     # Calculate length of countour lines
     print("Calculate lenght of contour lines.")
-    os.system("ogr2ogr " + contoursFile + " " + contoursFile + " -update -dialect SQLITE -sql 'ALTER TABLE contour ADD COLUMN line_length float'")
-    os.system("ogr2ogr " + contoursFile + " " + contoursFile + " -update -dialect SQLITE -sql 'UPDATE contour SET line_length = length(GEOMETRY)'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'ALTER TABLE contour ADD COLUMN line_length float'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE contour SET line_length = ST_Length(geom)'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'buffer' -dialect SQLITE -sql 'SELECT id, ele, line_length, ST_Union(ST_Buffer(geom, {buffer} )) as geom FROM contour WHERE (ele % {interval} = 0)'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'bbox' -dialect SQLITE -sql 'SELECT ST_Envelope(ST_Union(geom)) as geom FROM contour'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'diff' -dialect SQLITE -sql 'SELECT ST_Difference(bbox.geom, buffer.geom) as geom FROM bbox, buffer'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'clip' -nlt PROMOTE_TO_MULTI -dialect SQLITE -sql 'SELECT contour.id, contour.line_length, (ST_intersection(diff.geom, contour.geom)) AS geom FROM diff JOIN contour ON ST_intersects(contour.geom, diff.geom)'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE clip SET line_length = ST_Length(geom)'")
+
     # Convert to output format
-    os.system("ogr2ogr " + outputFile + " " + contoursFile)
+    os.system(f"ogr2ogr {outputFile} {contoursFile}")
 
     # Clean up
     os.remove(contoursFile)

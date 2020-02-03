@@ -18,7 +18,7 @@ def randomString(): # Calculate a random string
 def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
 
     inputDEM = inputTerrain
-    prefix = randomString()
+    prefix = "tmp_" + randomString()
     method = "gaussain"
     smooth = 9
 
@@ -257,8 +257,8 @@ def main(argv):
     pixelSize = ''
     gaussainBlur = ''
     medianBlur = ''
-    contourBuffer = 0
 
+    contourBuffer = 0
     tmp_file = "resample_dem.tif"
     overwrite = True
 
@@ -283,7 +283,7 @@ def main(argv):
             print("\t--medianBlur={3, 5, 7} kernel size for smoothing flat areas. Default is gaussianBlur.")
             print("\t--addContoursBuffer=(float) create addional contour lines in between and cut them to the buffer. Default 0 for no execution.")
             print("\t--help print this hopefully helpfull text.")
-            print("\t*necessary for execution.")
+            print("\t*Necessary for execution!")
             print("Mathias Gröbe 2020")
             sys.exit(0)
         elif opt in ("--inputDEM"):
@@ -336,6 +336,8 @@ def main(argv):
         # Clean up
         os.remove(tmp_file)
         os.remove(smooth_dem)
+
+        sys.exit(0)
 
     else:
         print("Sorry, missing some information. Please see help.")

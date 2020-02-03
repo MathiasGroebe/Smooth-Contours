@@ -304,6 +304,7 @@ def main(argv):
     if (inputDEM != '') & (outputFile != '') & (interval != '') & (pixelSize != ''):
 
         # Print info
+        print("")
         print("Create smooth contours with the help of GDAL. ")
         print("----------------------------------------------")
         print("Mathias Gröbe, 2020")
@@ -311,6 +312,7 @@ def main(argv):
         print("P. Kettunen, C. Koski, and J. Oksanen, 'A design of contour generation for topographic maps with adaptive DEM smoothing' ")
         print("International Journal of Cartography, vol. 3, no. 1, pp. 19–30, Jun. 2017.")
         print("----------------------------------------------")
+        print("")
 
         # Resample
         os.system("gdal_translate " + inputDEM + " " + tmp_file + " -tr "  + str(pixelSize) + " " + str(pixelSize) + " -r cubic -q")
@@ -331,7 +333,7 @@ def main(argv):
                     print("Can not delete old file! Is it open in a GIS?")
                 else:
                     print("Create " + outputFile + ".")
-                    createContours(outputFile, smooth_dem, interval)
+                    createContours(outputFile, smooth_dem, interval, contourBuffer)
 
         # Clean up
         os.remove(tmp_file)

@@ -236,12 +236,15 @@ def createContours(outputFile, smooth_dem, interval, contourBuffer):
         os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'buffer' -dialect SQLITE -sql 'SELECT id, ele, line_length, ST_Union(ST_Buffer(geom, {buffer} )) as geom FROM contour WHERE (ele % {interval} = 0)'")
         os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'bbox' -dialect SQLITE -sql 'SELECT ST_Envelope(ST_Union(geom)) as geom FROM contour'")
         os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'diff' -dialect SQLITE -sql 'SELECT ST_Difference(bbox.geom, buffer.geom) as geom FROM bbox, buffer'")
-        os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'contours_cliped' -nlt PROMOTE_TO_MULTI -dialect SQLITE -sql 'SELECT contour.id, contour.line_length, (ST_intersection(diff.geom, contour.geom)) AS geom FROM diff JOIN contour ON ST_intersects(contour.geom, diff.geom)'")
-        os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE contours_cliped SET line_length = ST_Length(geom)'")
+        os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'contour_cliped' -nlt PROMOTE_TO_MULTI -dialect SQLITE -sql 'SELECT contour.id, contour.ele, contour.line_length, (ST_intersection(diff.geom, contour.geom)) AS geom FROM diff JOIN contour ON ST_intersects(contour.geom, diff.geom)'")
+        os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE contour_cliped SET line_length = ST_Length(geom)'")
+        # Select and merge contours
+        os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln contour_add -nlt PROMOTE_TO_MULTI -dialect SQLITE -sql 'SELECT ID, ele, line_length, geom FROM contour WHERE ele % 20 = 0 UNION ALL SELECT ID, ele, line_length, geom FROM contour_cliped'")
         # Remove temp 
         os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE buffer'")
         os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE bbox'")
         os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE diff'")
+        os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE contour_cliped'")
 
     # Convert to output format
     os.system(f"ogr2ogr {outputFile} {contoursFile}")

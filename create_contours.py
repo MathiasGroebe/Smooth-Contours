@@ -160,11 +160,17 @@ def createContours(outputFile, smooth_dem, interval):
     print("Calculate lenght of contour lines.")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'ALTER TABLE contour ADD COLUMN line_length float'")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE contour SET line_length = ST_Length(geom)'")
+    # Calculate additional contour lines for flatter areas
+    print("Calculate additional contour lines for flatter areas.")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'buffer' -dialect SQLITE -sql 'SELECT id, ele, line_length, ST_Union(ST_Buffer(geom, {buffer} )) as geom FROM contour WHERE (ele % {interval} = 0)'")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'bbox' -dialect SQLITE -sql 'SELECT ST_Envelope(ST_Union(geom)) as geom FROM contour'")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'diff' -dialect SQLITE -sql 'SELECT ST_Difference(bbox.geom, buffer.geom) as geom FROM bbox, buffer'")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -append -nln 'clip' -nlt PROMOTE_TO_MULTI -dialect SQLITE -sql 'SELECT contour.id, contour.line_length, (ST_intersection(diff.geom, contour.geom)) AS geom FROM diff JOIN contour ON ST_intersects(contour.geom, diff.geom)'")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE clip SET line_length = ST_Length(geom)'")
+    # Remove temp 
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE buffer'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE bbox'")
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQL -sql 'DROP TABLE diff'")
 
     # Convert to output format
     os.system(f"ogr2ogr {outputFile} {contoursFile}")

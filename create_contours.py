@@ -232,6 +232,8 @@ def createContours(outputFile, smooth_dem, interval, contourBuffer):
     print("Calculate lenght of contour lines...")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'ALTER TABLE contour ADD COLUMN line_length float'")
     os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE contour SET line_length = ST_Length(geom)'")
+    # Reverse lines for easier german style labeling
+    os.system(f"ogr2ogr {contoursFile} {contoursFile} -update -dialect SQLITE -sql 'UPDATE contour SET geom = ST_Reverse(geom)'")
     
     if contourBuffer != 0:
         # Calculate additional contour lines for flatter areas

@@ -202,6 +202,9 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     os.remove(prefix + "_dem_blur_7x7.vrt")
     os.remove(prefix + "_dem_blur_9x9.vrt")
     os.remove(prefix + "_dem_blur_13x13.vrt")
+    os.remove(prefix + "_dem_median_3x3.vrt")
+    os.remove(prefix + "_dem_median_5x5.vrt")
+    os.remove(prefix + "_dem_median_7x7.vrt")    
     os.remove(prefix + "_tpi_pos.tif")
     os.remove(prefix + "_tpi_pos.tif.aux.xml")
     os.remove(prefix + "_tpi_blur_3x3.vrt")
@@ -271,6 +274,7 @@ def main(argv):
     for opt, arg in opts:
         if opt in ("--help"):
             print("Create smooth contours with the help of GDAL. Usage:")
+            print("")
             print("\tcreate_contour.py --inputDEM=DEMfile.tif --outputFile=contours.gpkg --interval=5 --pixelSize=2")
             print("")
             print("Algorithm for smooth contours in flat areas after: ")

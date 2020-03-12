@@ -191,9 +191,11 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     if (smooth == 3) & (method == "median"):
         print(f"Using median smoothing with value {smooth}...")
         os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_median_3x3.vrt -C ' + prefix + '_dem_median_3x3.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')       
-    # else ...
+    else:
+        print(f"Using gaussian smoothing with value 9 ...")
+        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_9x9.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')    
 
-
+        
     # Clean up
     os.remove(prefix + "_dem.tif")
     os.remove(prefix + "_dem_tpi.tif")
@@ -340,7 +342,7 @@ def main(argv):
                 if os.path.isfile(outputFile):
                     print("Can not delete old file! Is it open in a GIS?")
                 else:
-                    print("Create " + outputFile + ".")
+                    print("Create " + outputFile + "...")
                     createContours(outputFile, smooth_dem, interval, contourBuffer)
 
         # Clean up

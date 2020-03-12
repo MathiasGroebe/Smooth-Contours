@@ -8,8 +8,6 @@ import random
 import sys
 import getopt
 
-import spatialite
-
 def randomString(): # Calculate a random string
     length = 6
     letters = string.ascii_lowercase
@@ -273,10 +271,12 @@ def main(argv):
     for opt, arg in opts:
         if opt in ("--help"):
             print("Create smooth contours with the help of GDAL. Usage:")
-            print("\tcreate_contour.py --inputDEM=DEMfile.tif --outputFile=contours.geoJSON --interval=5 --pixelSize=2")
+            print("\tcreate_contour.py --inputDEM=DEMfile.tif --outputFile=contours.gpkg --interval=5 --pixelSize=2")
+            print("")
             print("Algorithm for smooth contours in flat areas after: ")
             print("P. Kettunen, C. Koski, and J. Oksanen, 'A design of contour generation for topographic maps with adaptive DEM smoothing' ")
             print("International Journal of Cartography, vol. 3, no. 1, pp. 19–30, Jun. 2017.")
+            print("")
             print("Parameters:")
             print("\t--inputDEM=(rasterFilename)* put here your DEM in any GDAL readable format.")
             print("\t--outputFile=(vectorFilename)* write the name of the outputfile for the contours. The format is guessed form the extention")
@@ -287,6 +287,7 @@ def main(argv):
             print("\t--addContoursBuffer=(float) create addional contour lines in between and cut them to the buffer. Default 0 for no execution.")
             print("\t--help print this hopefully helpfull text.")
             print("\t*Necessary for execution!")
+            print("")
             print("Mathias Gröbe 2020")
             sys.exit(0)
         elif opt in ("--inputDEM"):

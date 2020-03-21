@@ -27,15 +27,15 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
         smooth = int(medianBlur)        
         method = "median"
 
-    os.system("gdal_translate -ot Float32 -a_nodata -32768 "  + inputDEM + " " + prefix + "_dem.tif -q")
+    os.system(f"gdal_translate -ot Float32 -a_nodata -32768 {inputDEM} {prefix}_dem.tif -q")
 
     # Calculate TPI
     print("Calculate TPI...")
-    os.system("gdaldem TPI " + inputDEM + " " + prefix + "_dem_tpi.tif -q")
+    os.system(f"gdaldem TPI {inputDEM} {prefix}_dem_tpi.tif -q")
 
     # Build VRT for soft smoothed DEM
     print("Smooth DEM...")
-    os.system("gdalbuildvrt " + prefix + "_dem_blur_3x3.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_blur_3x3.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_blur_3x3.vrt", "rt")
     data = file.read()
@@ -48,7 +48,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()
 
     # Build VRT for soft smoothed DEM with median filter
-    os.system("gdalbuildvrt " + prefix + "_dem_median_3x3.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_median_3x3.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_median_3x3.vrt", "rt")
     data = file.read()
@@ -61,7 +61,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()    
 
     # Build VRT for smoothed DEM
-    os.system("gdalbuildvrt " + prefix + "_dem_blur_5x5.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_blur_5x5.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_blur_5x5.vrt", "rt")
     data = file.read()
@@ -74,7 +74,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()
 
     # Build VRT for smoothed DEM (median)
-    os.system("gdalbuildvrt " + prefix + "_dem_median_5x5.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_median_5x5.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_median_5x5.vrt", "rt")
     data = file.read()
@@ -87,7 +87,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()    
 
     # Build VRT for more smoothed DEM
-    os.system("gdalbuildvrt " + prefix + "_dem_blur_7x7.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_blur_7x7.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_blur_7x7.vrt", "rt")
     data = file.read()
@@ -100,7 +100,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()
 
     # Build VRT for more smoothed DEM (median)
-    os.system("gdalbuildvrt " + prefix + "_dem_median_7x7.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_median_7x7.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_median_7x7.vrt", "rt")
     data = file.read()
@@ -113,7 +113,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()    
 
     # Build VRT for more stronger smoothed DEM
-    os.system("gdalbuildvrt " + prefix + "_dem_blur_9x9.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_blur_9x9.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_blur_9x9.vrt", "rt")
     data = file.read()
@@ -126,7 +126,7 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.close()
 
     # Build VRT for strong smoothed DEM
-    os.system("gdalbuildvrt " + prefix + "_dem_blur_13x13.vrt " + prefix + "_dem.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_dem_blur_13x13.vrt {prefix}_dem.tif -q")
 
     file = open(prefix + "_dem_blur_13x13.vrt", "rt")
     data = file.read()
@@ -140,9 +140,9 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
 
     print("Reclassify and smooth TPI...")
     # Reclassify TPI
-    os.system('gdal_calc.py -A ' + prefix + '_dem_tpi.tif --outfile=' + prefix + '_tpi_pos.tif --NoDataValue=-32768 --calc="((-1)*A*(A<0))+(A*(A>=0))" --quiet')
+    os.system(f"gdal_calc.py -A {prefix}_dem_tpi.tif --outfile={prefix}_tpi_pos.tif --NoDataValue=-32768 --calc=\"((-1)*A*(A<0))+(A*(A>=0))\" --quiet")
     # Build VRT for smooth TPI
-    os.system("gdalbuildvrt " + prefix + "_tpi_blur_3x3.vrt " + prefix + "_tpi_pos.tif -q")
+    os.system(f"gdalbuildvrt {prefix}_tpi_blur_3x3.vrt {prefix}_tpi_pos.tif -q")
 
     file = open(prefix + "_tpi_blur_3x3.vrt", "rt")
     data = file.read()
@@ -154,46 +154,46 @@ def smoothTerrain(inputTerrain, gaussianBlur, medianBlur):
     file.write(data)
     file.close()
 
-    info = os.popen("gdalinfo " + prefix + "_tpi_blur_3x3.vrt -hist").read()
+    info = os.popen(f"gdalinfo {prefix}_tpi_blur_3x3.vrt -hist").read()
 
     # Normalize smoothed TPI, if no max avaible than just copy file
     try:
         maxValue = re.findall('[0-9]*\.[0-9]*', re.findall('STATISTICS_MAXIMUM=\d*.\d*', info)[0])[0]
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_blur_3x3.vrt --outfile=' + prefix + '_tpi_norm.tif --NoDataValue=-32768 --calc="A / ' + maxValue + '" --quiet')
+        os.system(f"gdal_calc.py -A {prefix}_tpi_blur_3x3.vrt --outfile={prefix}_tpi_norm.tif --NoDataValue=-32768 --calc=\"A / {maxValue}\" --quiet")
     except:
-        os.system("gdal_translate " + prefix + "_tpi_blur_3x3.vrt " + prefix + "_tpi_norm.tif -q")
+        os.system(f"gdal_translate {prefix}_tpi_blur_3x3.vrt {prefix}_tpi_norm.tif -q")
 
     # Combine it together
     print("Build better DEM for contour lines...")
     # use gaussian filter
     if (smooth == 13) & (method == "gaussian"):
         print(f"Using gaussian smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_13x13.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_blur_3x3.vrt -C {prefix}_dem_blur_13x13.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     if (smooth == 9) & (method == "gaussian"):
         print(f"Using gaussian smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_9x9.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')    
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_blur_3x3.vrt -C {prefix}_dem_blur_9x9.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     if (smooth == 7) & (method == "gaussian"):
         print(f"Using gaussian smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_7x7.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')   
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_blur_3x3.vrt -C {prefix}_dem_blur_7x7.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     if (smooth == 5) & (method == "gaussian"):
         print(f"Using gaussian smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_5x5.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')    
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_blur_3x3.vrt -C {prefix}_dem_blur_5x5.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     if (smooth == 3) & (method == "gaussian"):
         print(f"Using gaussian smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_3x3.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')   
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_blur_3x3.vrt -C {prefix}_dem_blur_3x3.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     # use median filter
     if (smooth == 7) & (method == "median"):
         print(f"Using median smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_median_3x3.vrt -C ' + prefix + '_dem_median_7x7.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')   
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_median_3x3.vrt -C {prefix}_dem_median_7x7.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")   
     if (smooth == 5) & (method == "median"):
         print(f"Using median smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_median_3x3.vrt -C ' + prefix + '_dem_median_5x5.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')    
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_median_3x3.vrt -C {prefix}_dem_median_5x5.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     if (smooth == 3) & (method == "median"):
         print(f"Using median smoothing with value {smooth}...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_median_3x3.vrt -C ' + prefix + '_dem_median_3x3.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')       
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_median_3x3.vrt -C {prefix}_dem_median_3x3.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")
     else:
         print(f"Using gaussian smoothing with value 9 ...")
-        os.system('gdal_calc.py -A ' + prefix + '_tpi_norm.tif -B ' + prefix + '_dem_blur_3x3.vrt -C ' + prefix + '_dem_blur_9x9.vrt --outfile="smooth_' + inputDEM + '" --overwrite --calc="A*B+(1-A)*C" --quiet')    
+        os.system(f"gdal_calc.py -A {prefix}_tpi_norm.tif -B {prefix}_dem_blur_3x3.vrt -C {prefix}_dem_blur_9x9.vrt --outfile=\"smooth_{inputDEM}\" --overwrite --calc=\"A*B+(1-A)*C\" --quiet")    
 
         
     # Clean up
@@ -327,7 +327,7 @@ def main(argv):
         print("")
 
         # Resample
-        os.system("gdal_translate " + inputDEM + " " + tmp_file + " -tr "  + str(pixelSize) + " " + str(pixelSize) + " -r cubic -q")
+        os.system(f"gdal_translate {inputDEM} {tmp_file} -tr {pixelSize} {pixelSize} -r cubic -q")
 
         # Smooth terrain
         smooth_dem = smoothTerrain(tmp_file, gaussainBlur, medianBlur)
@@ -344,7 +344,7 @@ def main(argv):
                 if os.path.isfile(outputFile):
                     print("Can not delete old file! Is it open in a GIS?")
                 else:
-                    print("Create " + outputFile + "...")
+                    print(f"Create {outputFile} ...")
                     createContours(outputFile, smooth_dem, interval, contourBuffer)
 
         # Clean up

@@ -279,7 +279,7 @@ def main(argv):
         if opt in ("--help"):
             print("Create smooth contours with the help of GDAL. Usage:")
             print("")
-            print("\tcreate_contour.py --inputDEM=DEMfile.tif --outputFile=contours.gpkg --interval=5 --pixelSize=2")
+            print("\t python3 create_contours.py --inputDEM=DEMfile.tif --outputFile=contours.gpkg --interval=5 --pixelSize=2")
             print("")
             print("Algorithm for smooth contours in flat areas after: ")
             print("P. Kettunen, C. Koski, and J. Oksanen, 'A design of contour generation for topographic maps with adaptive DEM smoothing' ")
@@ -294,7 +294,7 @@ def main(argv):
             print("\t--medianBlur={3, 5, 7} kernel size for smoothing flat areas. Default is gaussianBlur.")
             print("\t--addContoursBuffer=(float) create addional contour lines in between and cut them to the buffer. Default 0 for no execution.")
             print("\t--help print this hopefully helpfull text.")
-            print("\t*Necessary for execution!")
+            print("\t* Necessary for execution!")
             print("")
             print("Mathias Gröbe 2020")
             sys.exit(0)
